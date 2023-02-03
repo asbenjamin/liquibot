@@ -21,7 +21,7 @@ export async function getPendingTransactions(req: Request, res: Response) {
       const txtInfo = await provider.getTransaction(tx);
 
       if (txtInfo && txtInfo.to && txtInfo.data != "0x") {
-        transactions.push({ txtInfo});
+        transactions.push({ txtInfo });
       }
     });
 
