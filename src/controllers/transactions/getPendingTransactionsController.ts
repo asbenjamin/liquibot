@@ -16,7 +16,28 @@ export async function getPendingTransactions(req: Request, res: Response) {
       const txtInfo = await provider.getTransaction(tx);
 
       if (txtInfo && txtInfo.to && txtInfo.data != "0x") {
-        transactions.push({ txtInfo });
+        const contractAddress = txtInfo.to;
+        const byteCode = await provider.getCode(contractAddress);
+        const gas = txtInfo.gasLimit.toNumber();
+        const gasPrice = txtInfo.gasPrice?.toNumber();
+        const maxFeePerGas = txtInfo.maxFeePerGas?.toNumber();
+        const decodedData = decode(txtInfo.hash, txtInfo.data);
+
+        transactions.push({
+          transactionHash: txtInfo.hash,
+          toAddress: contractAddress,
+          byteCode: byteCode,
+          gas: gas,
+          gasPrice: gasPrice,
+          maxFeePerGas: maxFeePerGas,
+          decoded: decodedData,
+        });
+
+        if (decodedData && decodedData.name == "addLiquididty") {
+          console.log("Yeessssssssssssssss");
+          // buy the token automatically logic (log the data to the bot UI)
+        }
+
       }
     });
 
