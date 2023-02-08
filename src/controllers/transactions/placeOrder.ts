@@ -1,13 +1,6 @@
 import { Request, Response } from "express";
-import { Configs } from "../../config";
-import { BybitService } from "../../exchange/bybit";
+import { bybitService } from "../../utils/initBybit";
 
-const bybitService = new BybitService({
-  key: Configs.key,
-  secret: Configs.secret,
-  baseUrl: Configs.baseUrl,
-  testnet: true,
-});
 
 export async function placeOrder(req: Request, res: Response) {
   console.log("API Clear");
@@ -24,20 +17,15 @@ export async function placeOrder(req: Request, res: Response) {
     res.status(502).json({ error: "No request body" });
   }
 
-  let {
-    symbol,
-    side,
-    order_type,
-    qty,
-    time_in_force,
-    reduce_only,
-    close_on_trigger,
-  } = req.body;
+  let { symbol, side, order_type, qty, time_in_force, close_on_trigger } =
+    req.body;
+
+  let reduce_only = side === "Buy" ? false : true;
 
   let price =
     side === "Buy"
-      ? lastTradedPrice.lastTradedPrice - 0.05
-      : lastTradedPrice.lastTradedPrice + 0.05;
+      ? lastTradedPrice.lastTradedPrice - 0.5
+      : lastTradedPrice.lastTradedPrice + 0.5;
 
   const result = await bybitService.placeOrder(
     symbol,

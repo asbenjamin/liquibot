@@ -1,9 +1,11 @@
 import {
   LinearClient,
   LinearOrder,
+  PerpPosition,
   RestClientOptions,
   SymbolIntervalFromLimitParam,
 } from "bybit-api";
+import { IPosition } from "../types";
 
 export class BybitService {
   private linear: LinearClient;
@@ -69,5 +71,32 @@ export class BybitService {
   public async getBalance() {
     const res = await this.linear.getWalletBalance();
     return res.result;
+  }
+
+  public async getPnl(symbol: string): Promise<IPosition | null> {
+    let { result, ret_msg, ret_code }: any = await this.linear.getPosition({
+      symbol,
+    });
+
+    if (ret_code === 0) {
+      return result;
+    } else {
+      throw new Error(ret_msg);
+    }
+  }
+
+  public async cancelOrders(symbol: string) {
+    const result = await this.linear.cancelAllActiveOrders({
+      symbol,
+    });
+    return result;
+  }
+
+  public async cancelSingleOrder(symbol: string, order_id: string) {
+    const result = await this.linear.cancelActiveOrder({
+      symbol,
+      order_id,
+    });
+    return result;
   }
 }
