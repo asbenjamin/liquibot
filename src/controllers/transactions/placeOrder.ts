@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { bybitService } from "../../utils/initBybit";
 
-
 export async function placeOrder(req: Request, res: Response) {
   console.log("API Clear");
 
@@ -27,18 +26,31 @@ export async function placeOrder(req: Request, res: Response) {
       ? lastTradedPrice.lastTradedPrice - 0.5
       : lastTradedPrice.lastTradedPrice + 0.5;
 
-  const result = await bybitService.placeOrder(
-    symbol,
-    side,
-    order_type,
-    qty,
-    time_in_force,
-    price,
-    reduce_only,
-    close_on_trigger
-  );
+  let result;
+  if (order_type === "Market") {
+    result = await bybitService.placeOrder(
+      symbol,
+      side,
+      order_type,
+      qty,
+      time_in_force,
+      typeof price !== "undefined" ? price : undefined,
+      reduce_only,
+      close_on_trigger
+    );
+  } else
+    result = await bybitService.placeOrder(
+      symbol,
+      side,
+      order_type,
+      qty,
+      time_in_force,
+      price,
+      reduce_only,
+      close_on_trigger
+    );
   console.log(result);
-  console.log("price", price);
+  // console.log("price", price);
   console.log("qty", qty);
 
   if (result) {

@@ -99,4 +99,11 @@ export class BybitService {
     });
     return result;
   }
+
+  public async replaceActiveOrder(order_id: string, symbol: string) {
+    const result = await this.linear.replaceActiveOrder({
+      order_id,
+      symbol,
+    });
+  }
 }
