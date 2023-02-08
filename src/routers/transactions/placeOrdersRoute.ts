@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { placeOrder } from "../../controllers/transactions/placeOrder"
+import { placeOrder } from "../../controllers/bybit/placeOrder"
 
 class placeOrderRouter {
   private _router = Router();

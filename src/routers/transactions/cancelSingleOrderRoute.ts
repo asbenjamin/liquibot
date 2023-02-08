@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { cancelSingleOrder } from "../../controllers/transactions/cancelSingleOrder";
+import { cancelSingleOrder } from "../../controllers/bybit/cancelSingleOrder";
 
 class cancelSingleOrderRouter {
   private _router = Router();

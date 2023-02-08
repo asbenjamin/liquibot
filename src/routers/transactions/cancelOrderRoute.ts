@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { cancelOrders } from "../../controllers/transactions/cancelOrder";
+import { cancelOrders } from "../../controllers/bybit/cancelOrder";
 
 class cancelOrdersRouter {
   private _router = Router();

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getPnl } from "../../controllers/transactions/getPnl";
+import { getPnl } from "../../controllers/bybit/getPnl";
 
 class getPnlRouter {
   private _router = Router();
