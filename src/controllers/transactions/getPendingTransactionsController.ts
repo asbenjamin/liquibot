@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { Request, Response } from "express";
 import { Configs } from "../../config";
+import abiSample from "../../utils/abisample.json"
 
 const API_KEY = Configs.infura_api_key;
 
