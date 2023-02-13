@@ -53,7 +53,6 @@ export async function getPendingTransactions(req: Request, res: Response) {
           console.log("Yeessssssssssssssss");
           // buy the token automatically logic (log the data to the bot UI)
         }
-
       }
     });
 
