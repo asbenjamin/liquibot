@@ -48,8 +48,8 @@ export class BybitService {
     return res;
   }
 
-  public async getMarkPriceKlineData(params: SymbolIntervalFromLimitParam) {
-    const res = await this.linear.getMarkPriceKline(params);
+  public async getKlineData(params: SymbolIntervalFromLimitParam) {
+    const res = await this.linear.getKline(params);
     return res;
   }
 
@@ -70,7 +70,7 @@ export class BybitService {
 
   public async getBalance() {
     const res = await this.linear.getWalletBalance();
-    return res.result;
+    return res;
   }
 
   public async getPnl(symbol: string): Promise<IPosition | null> {
