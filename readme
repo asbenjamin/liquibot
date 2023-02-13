@@ -1,3 +1,6 @@
 https://dev.to/mihaiandrei97/how-to-monitor-eth-transactions-using-web3js-46p7
 https://custody.bitpanda.com/insights-events/decoding-an-ethereum-transaction-its-no-secret-its-just-smart
 https://www.investopedia.com/news/what-erc20-and-what-does-it-mean-ethereum/#:~:text=ERC%2D20%20is%20the%20technical,a%20way%20to%20be%20exchanged.
+
+
+This is a backend for a backend that buys and sells tokens that have liquidity added to them, and logs them to a telegram front end

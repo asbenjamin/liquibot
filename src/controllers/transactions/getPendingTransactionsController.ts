@@ -1,13 +1,8 @@
 import { ethers } from "ethers";
 import { Request, Response } from "express";
-import dotenv from "dotenv";
+import { Configs } from "../../config";
 
-// load the environment variables from the .env file
-dotenv.config({
-  path: ".env",
-});
-
-const API_KEY = process.env.API_KEY!;
+const API_KEY = Configs.infura_api_key;
 
 export async function getPendingTransactions(req: Request, res: Response) {
   const provider = new ethers.providers.WebSocketProvider(
