@@ -12,6 +12,21 @@ export async function getPendingTransactions(req: Request, res: Response) {
   try {
     const transactions: any = [];
 
+    const erc20interface = new ethers.utils.Interface(abiSample);
+
+    let decode = (txHash: string, inputData: string) => {
+      // console.log("\n", inputData)
+      try {
+        let txData = erc20interface.parseTransaction({
+          data: inputData,
+        });
+        // console.log("\n\n\n  Got one ", txData);
+        return txData;
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     provider.on("pending", async (tx) => {
       const txtInfo = await provider.getTransaction(tx);
 
