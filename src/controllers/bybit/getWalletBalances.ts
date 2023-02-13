@@ -10,8 +10,13 @@ export async function getWalletBalance(req: Request, res: Response) {
 
   if (walletBalances) {
     res.status(200).json({
-      balance: walletBalances
+      balance: walletBalances,
     });
-    sendMessage(Configs.bybit_bot_chat_id, `USDT Balance - ${(walletBalances.result["USDT"]?.available_balance)?.toString()}`);
+    sendMessage(
+      Configs.bybit_bot_chat_id,
+      `USDT Balance - \`${walletBalances.result[
+        "USDT"
+      ]?.available_balance?.toString()}\``
+    );
   } else res.status(401).json({ msg: "An error occured, modify something" });
 }
