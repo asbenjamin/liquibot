@@ -23,8 +23,8 @@ export async function placeOrder(req: Request, res: Response) {
 
   let price =
     side === "Buy"
-      ? lastTradedPrice.lastTradedPrice - 0.5
-      : lastTradedPrice.lastTradedPrice + 0.5;
+      ? lastTradedPrice.lastTradedPrice - 3.05
+      : lastTradedPrice.lastTradedPrice + 3.05;
 
   let result;
   if (order_type === "Market") {
@@ -49,11 +49,15 @@ export async function placeOrder(req: Request, res: Response) {
       reduce_only,
       close_on_trigger
     );
-  console.log(result);
-  // console.log("price", price);
-  console.log("qty", qty);
 
   if (result) {
+    let params = {
+      orderId: result.order_id,
+      symbol: result.symbol,
+      side: result.side,
+    };
+    await bybitService.chaseOrder(params);
+
     res.status(200).json({
       orderPlaced: result,
       apiInfo: apiInfo,

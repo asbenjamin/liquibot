@@ -1,11 +1,11 @@
 import {
   LinearClient,
   LinearOrder,
-  PerpPosition,
   RestClientOptions,
   SymbolIntervalFromLimitParam,
 } from "bybit-api";
 import { IPosition } from "../types";
+import { sleep } from "../utils/sleep";
 
 export class BybitService {
   private linear: LinearClient;
@@ -105,5 +105,58 @@ export class BybitService {
       order_id,
       symbol,
     });
+    return result;
+  }
+
+  public async chaseOrder(params: {
+    orderId: string;
+    symbol: string;
+    side: string;
+    trailBybps?: number;
+    maxRetries?: number;
+  }) {
+    let count = 0;
+    let { orderId, symbol, side, trailBybps, maxRetries } = params;
+    if (!orderId) {
+      console.error("no order to chase");
+    }
+    maxRetries = maxRetries ?? 100;
+    while (true) {
+      await sleep(30000);
+      console.log("chasing order");
+      console.log(symbol);
+      let price = (await this.getLastTradedPrice(symbol))
+        .lastTradedPrice;
+      console.log("???? price", price);
+
+      if (price === null) {
+        console.error("could not get the price");
+      } else {
+        trailBybps = trailBybps ?? 0.01;
+        price = params.side === "Buy" ? price - 0.05 : price + 0.05;
+        console.log(typeof price);
+
+        let { ret_code, result, ret_msg } =
+          await this.linear.replaceActiveOrder({
+            order_id: orderId,
+            p_r_price: Number(parseFloat(price).toFixed(2)),
+            symbol: symbol,
+          });
+
+        if (ret_code === 0) {
+          orderId = result.order_id;
+          const msg = "order replaced successfully";
+          console.log(msg);
+        } else if (ret_msg?.includes("too late to replace")) {
+          console.log("order already in position");
+          break;
+        } else {
+          continue;
+        }
+        if (count > maxRetries) {
+          console.log("maximum retries have been reached");
+        }
+      }
+    }
   }
 }
