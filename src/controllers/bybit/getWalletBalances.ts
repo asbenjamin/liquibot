@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Configs } from "../../config";
 import { bybitService } from "../../utils/initBybit";
-import { sendMessage } from "../../utils/telegraf/botInit";
+import { sendMessage } from "../../utils/message";
 
 export async function getWalletBalance(req: Request, res: Response) {
   console.log("API Clear");
