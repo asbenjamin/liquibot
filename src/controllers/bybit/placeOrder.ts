@@ -10,7 +10,6 @@ export async function placeOrder(req: Request, res: Response) {
     req.body.symbol
   );
   const walletBalances = await bybitService.getBalance();
-  // let price = lastTradedPrice.lastTradedPrice;
 
   if (!req.body) {
     res.status(502).json({ error: "No request body" });
@@ -51,6 +50,7 @@ export async function placeOrder(req: Request, res: Response) {
     );
 
   if (result) {
+    console.log("Position opened");
     let params = {
       orderId: result.order_id,
       symbol: result.symbol,
@@ -67,6 +67,6 @@ export async function placeOrder(req: Request, res: Response) {
     });
   } else
     res
-      .status(401)
+      .status(400)
       .json({ msg: "An error occured, try placing an order again" });
 }
