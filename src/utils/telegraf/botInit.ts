@@ -17,7 +17,7 @@ bot.start((ctx) => {
 
 bot.action("placeordereth", async (ctx) => {
   try {
-    ctx.reply(`Placing your order...`)
+    ctx.reply(`Placing your order...`);
     console.log("here we are, placing your order");
 
     const orderData = {
@@ -68,6 +68,7 @@ bot.action("placeordereth", async (ctx) => {
       Configs.bybit_bot_chat_id,
       `Purchase order for ${orderData.qty} eth placed successfully`
     );
+    await redis.flushall();
   } catch (error) {
     console.error(error);
     sendMessage(
@@ -142,8 +143,36 @@ bot.action("Buy_Five", async (ctx) => {
 
     Markup.inlineKeyboard([
       Markup.button.callback("💱 Confirm Order", "placeordereth"),
-    ]),
+    ])
   );
+  console.log(await redis.get("orderSide"));
+  console.log(await redis.get("orderType"));
+  console.log(await redis.get("qty"));
+});
+
+bot.command("showdata", async (ctx) => {
+  try {
+    // Retrieve all keys
+    const keys = await redis.keys("*");
+
+    if (keys.length === 0) {
+      ctx.reply("No data found.");
+      return;
+    }
+
+    // Retrieve the value for each key and create a response message
+    let message = "Available data:\n";
+    for (const key of keys) {
+      const value = await redis.get(key);
+      message += `${key}: ${value}\n`;
+    }
+
+    // Send the response message
+    ctx.reply(message);
+  } catch (error) {
+    console.error(error);
+    ctx.reply("An error occurred.");
+  }
 });
 
 bot.launch;
