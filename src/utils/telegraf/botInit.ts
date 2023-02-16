@@ -1,45 +1,72 @@
 import axios from "axios";
-import { Telegraf } from "telegraf";
+import { Markup, Telegraf, Context } from "telegraf";
 import { Configs } from "../../config";
+import { bybitService } from "../initBybit";
 import { sendMessage } from "../message";
+import { Redis } from "ioredis";
 
-const bot = new Telegraf(Configs.telegram_bot_token);
+const redis = new Redis();
+
+const bot = new Telegraf<Context>(Configs.telegram_bot_token);
 
 bot.start((ctx) => {
-  let message = `Welcome, you will get Bybit Order logs here`;
-  ctx.reply(message);
+  ctx.reply(
+    `Welcome to the Bybit bot, ${ctx.from.first_name}, you can press the menu for some actions to take`
+  );
 });
 
-bot.command("/placeorder", async (ctx) => {
+bot.action("placeordereth", async (ctx) => {
   try {
-    console.log("here we are");
-
-    const input = JSON.parse(ctx.message.text.split(" ").slice(1).join(" "));
-    const { symbol, side, order_type, qty, time_in_force, close_on_trigger } =
-      input;
+    ctx.reply(`Placing your order...`)
+    console.log("here we are, placing your order");
 
     const orderData = {
-      symbol,
-      side,
-      order_type,
-      qty,
-      time_in_force,
-      close_on_trigger,
+      symbol: "ETHUSDT",
+      side: await redis.get("orderSide"),
+      order_type: await redis.get("orderType"),
+      qty: Number(await redis.get("qty")),
+      time_in_force: "GoodTillCancel",
+      close_on_trigger: false,
     };
 
-    await axios
-      .post("http://localhost:3000/api/place-order", orderData)
-      .then((response) => {
-        console.log(response.data);
-        return response.data;
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    const lastTradedPrice = await bybitService.getLastTradedPrice("ETHUSDT");
+    let reduce_only = orderData.side === "Buy" ? false : true;
+    let price =
+      orderData.side === "Buy"
+        ? lastTradedPrice.lastTradedPrice - 0.05
+        : lastTradedPrice.lastTradedPrice + 0.05;
+
+    try {
+      let result;
+      if (orderData.order_type === "Market") {
+        result = await bybitService.placeOrder(
+          orderData.symbol,
+          orderData.side,
+          orderData.order_type,
+          orderData.qty,
+          orderData.time_in_force,
+          typeof price !== "undefined" ? price : undefined,
+          reduce_only,
+          orderData.close_on_trigger
+        );
+      } else
+        result = await bybitService.placeOrder(
+          orderData.symbol,
+          orderData.side,
+          orderData.order_type,
+          orderData.qty,
+          orderData.time_in_force,
+          price,
+          reduce_only,
+          orderData.close_on_trigger
+        );
+    } catch (err) {
+      console.error(err);
+    }
 
     sendMessage(
       Configs.bybit_bot_chat_id,
-      `Order placed successfully with symbol - ${symbol}, side - ${side}, order_type - ${order_type}, qty - ${qty}, time in force - ${time_in_force}, and close on trigger - ${close_on_trigger}`
+      `Purchase order for ${orderData.qty} eth placed successfully`
     );
   } catch (error) {
     console.error(error);
@@ -50,7 +77,7 @@ bot.command("/placeorder", async (ctx) => {
   }
 });
 
-bot.command("/getbalance", async (ctx) => {
+bot.command("getbalance", async (ctx) => {
   try {
     console.log("here we are");
 
@@ -70,6 +97,53 @@ bot.command("/getbalance", async (ctx) => {
       `An error occurred while placing your order: ${error}`
     );
   }
+});
+
+bot.command("placeorder", (ctx) => {
+  ctx.reply(
+    `Select the order type, ${ctx.from.first_name}?`,
+    Markup.inlineKeyboard([
+      Markup.button.callback("Place Limit Order", "Limit_Order"),
+      Markup.button.callback("Place Market Order", "Market_Order"),
+    ])
+  );
+});
+
+bot.action("Limit_Order", async (ctx) => {
+  await redis.set("orderType", "Limit");
+
+  ctx.reply(
+    `Do you want to Buy or Sell`,
+    Markup.inlineKeyboard([
+      Markup.button.callback("🤑 Buy Some", "Buy"),
+      Markup.button.callback("💱 Sell Some", "Sell"),
+    ])
+  );
+});
+
+bot.action("Buy", async (ctx) => {
+  await redis.set("orderSide", "Buy");
+
+  ctx.reply(
+    `How much do you want`,
+    Markup.inlineKeyboard([Markup.button.callback("💱 Buy 5", "Buy_Five")])
+  );
+});
+
+bot.action("Buy_Five", async (ctx) => {
+  await redis.set("qty", "5");
+
+  ctx.reply(
+    `Please confirm that you want to place a ${await redis.get(
+      "orderType"
+    )} ${await redis.get("orderSide")} order of ${await redis.get(
+      "qty"
+    )} ETHUSDT`,
+
+    Markup.inlineKeyboard([
+      Markup.button.callback("💱 Confirm Order", "placeordereth"),
+    ]),
+  );
 });
 
 bot.launch;
