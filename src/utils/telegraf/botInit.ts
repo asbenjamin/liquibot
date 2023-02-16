@@ -4,6 +4,9 @@ import { Configs } from "../../config";
 import { bybitService } from "../initBybit";
 import { sendMessage } from "../message";
 import { Redis } from "ioredis";
+import * as schedule from "node-schedule";
+
+let job: schedule.Job | undefined;
 
 const redis = new Redis();
 
@@ -65,6 +68,28 @@ bot.action("placeordereth", async (ctx) => {
             reduce_only,
             orderData.close_on_trigger
           );
+        if (result) {
+          const msg =
+            "Position opened, will chase now, if not yet filled with best price";
+          console.log(msg);
+          sendMessage(Configs.bybit_bot_chat_id, msg);
+          let params = {
+            orderId: result.order_id,
+            symbol: result.symbol,
+            side: result.side,
+          };
+
+          await bybitService.chaseOrder(params);
+
+          // get pnl (run this as a cron when the bot starts or when there are active positions)
+          const res: any = await bybitService.getPnl(result.symbol);
+          const unrealisedPnLs = res.map((item: any) => item.unrealised_pnl);
+          console.log(unrealisedPnLs);
+          sendMessage(
+            Configs.bybit_bot_chat_id,
+            `PNL Buy Side: ${unrealisedPnLs[0]}    PNL Sell Side: ${unrealisedPnLs[1]}`
+          );
+        }
       } catch (err) {
         console.error(err);
       }
@@ -226,6 +251,39 @@ bot.command("showdata", async (ctx) => {
   } catch (error) {
     console.error(error);
     ctx.reply("An error occurred.");
+  }
+});
+
+bot.command("startpnl", async (ctx: Context) => {
+  // Clear the job if it was previously set
+  if (job) job.cancel();
+
+  // Schedule the new job to execute the command every 5 seconds
+  job = schedule.scheduleJob("*/5 * * * * *", async () => {
+    try {
+      const res: any = await bybitService.getPnl("ETHUSDT");
+      const unrealisedPnLs = res.map((item: any) => item.unrealised_pnl);
+      console.log(unrealisedPnLs);
+      sendMessage(
+        Configs.bybit_bot_chat_id,
+        `PNL Buy Side: ${unrealisedPnLs[0]}    PNL Sell Side: ${unrealisedPnLs[1]}`
+      );
+    } catch (error) {
+      console.error(error);
+      ctx.reply("An error occurred.");
+    }
+  });
+
+  ctx.reply("Started sending PNL messages every 5 seconds.");
+});
+
+bot.command("stoppnl", (ctx: Context) => {
+  // Cancel the scheduled job
+  if (job) {
+    job.cancel();
+    ctx.reply("Stopped sending PNL messages.");
+  } else {
+    ctx.reply("No PNL messages are currently being sent.");
   }
 });
 

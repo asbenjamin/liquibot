@@ -4,7 +4,9 @@ import {
   RestClientOptions,
   SymbolIntervalFromLimitParam,
 } from "bybit-api";
+import { Configs } from "../config";
 import { IPosition } from "../types";
+import { sendMessage } from "../utils/message";
 import { sleep } from "../utils/sleep";
 
 export class BybitService {
@@ -125,12 +127,12 @@ export class BybitService {
       await sleep(30000);
       console.log("chasing order");
       console.log(symbol);
-      let price = (await this.getLastTradedPrice(symbol))
-        .lastTradedPrice;
+      let price = (await this.getLastTradedPrice(symbol)).lastTradedPrice;
       console.log("???? price", price);
 
       if (price === null) {
         console.error("could not get the price");
+        sendMessage(Configs.bybit_bot_chat_id, `could not get the price`);
       } else {
         trailBybps = trailBybps ?? 0.01;
         price = params.side === "Buy" ? price - 0.05 : price + 0.05;
@@ -146,15 +148,27 @@ export class BybitService {
         if (ret_code === 0) {
           orderId = result.order_id;
           const msg = "order replaced successfully";
+          sendMessage(Configs.bybit_bot_chat_id, msg);
+          // TASK - getPnl to send to telegram from here
           console.log(msg);
+          sendMessage(Configs.bybit_bot_chat_id, msg);
         } else if (ret_msg?.includes("too late to replace")) {
-          console.log("order already in position");
+          console.log("order already in position, cannot chase");
+          sendMessage(
+            Configs.bybit_bot_chat_id,
+            `order already in position, cannot chase`
+          );
+          // TASK - getPnl to send to telegram from here
           break;
         } else {
           continue;
         }
         if (count > maxRetries) {
           console.log("maximum retries have been reached");
+          sendMessage(
+            Configs.bybit_bot_chat_id,
+            `maximum retries have been reached`
+          );
         }
       }
     }
