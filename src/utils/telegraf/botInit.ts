@@ -250,7 +250,7 @@ bot.command("showdata", async (ctx) => {
     ctx.reply(message);
   } catch (error) {
     console.error(error);
-    ctx.reply("An error occurred.");
+    ctx.reply(`An error occurred in the data retrieval: ${error}.`);
   }
 });
 
@@ -270,7 +270,7 @@ bot.command("startpnl", async (ctx: Context) => {
       );
     } catch (error) {
       console.error(error);
-      ctx.reply("An error occurred.");
+      ctx.reply(`An error occurred in the scheduling: ${error}.`);
     }
   });
 
