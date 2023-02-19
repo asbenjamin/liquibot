@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { Configs } from "../config";
-import abiSample from "../utils/abisample.json";
+import abiSample from "../utils/uniswapAbi.json";
 
 const API_KEY = Configs.infura_api_key;
 
@@ -23,9 +23,13 @@ const token = new ethers.Contract(tokenAddress, tokenABI);
 
 // get exchange rate - e.g. current price of DAI in ETH
 // returns eth amt to send to uniswap to get 1 Dai
-const daiEthPrice = await unisWapExchange.getTokenInputPrice(
-  ethers.utils.parseUnits("1", 18)
-);
+async function getDaiEthPrice() {
+  const daiEthPrice = await unisWapExchange.getTokenInputPrice(
+    ethers.utils.parseUnits("1", 18)
+  );
+  return daiEthPrice;
+}
+const daiEthPrice = getDaiEthPrice;
 
 // tokens to trade based on exch rate
 // e.g to buy 100 DAI with eth
