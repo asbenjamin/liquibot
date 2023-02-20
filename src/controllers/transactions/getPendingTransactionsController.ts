@@ -28,10 +28,11 @@ export async function getPendingTransactions(req: Request, res: Response) {
         // console.log("\n\n\n  Got one ", txData);
         return txData;
       } catch (error: any) {
+        console.log(error)
         // throw new Error(
         //   `Error decoding transaction input data: ${error.message}`
         // );
-        return { error: error.message };
+        return { error: `Error: '${error.reason} and becuase there is no matching function' for the sighash ${error.value} found` };
       }
     };
 
