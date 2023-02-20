@@ -66,7 +66,6 @@ export async function getPendingTransactions(req: Request, res: Response) {
               gasPrice: gasPrice,
               maxFeePerGas: maxFeePerGas,
               decoded: decodedData,
-              error: decodedData.error,
             });
           } else if (decodedData && decodedData.name == "addLiquididty") {
             console.log("Yeessssssssssssssss");
