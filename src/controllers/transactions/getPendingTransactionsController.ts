@@ -27,8 +27,11 @@ export async function getPendingTransactions(req: Request, res: Response) {
         });
         // console.log("\n\n\n  Got one ", txData);
         return txData;
-      } catch (error) {
-        console.log(error);
+      } catch (error: any) {
+        // throw new Error(
+        //   `Error decoding transaction input data: ${error.message}`
+        // );
+        return { error: error.message };
       }
     };
 
@@ -43,30 +46,36 @@ export async function getPendingTransactions(req: Request, res: Response) {
     );
 
     provider.on("pending", async (tx) => {
-      const txtInfo = await provider.getTransaction(tx);
+      try {
+        const txtInfo = await provider.getTransaction(tx);
 
-      if (txtInfo && txtInfo.to && txtInfo.data != "0x") {
-        const contractAddress = txtInfo.to;
-        const byteCode = await provider.getCode(contractAddress);
-        const gas = txtInfo.gasLimit.toNumber();
-        const gasPrice = txtInfo.gasPrice?.toNumber();
-        const maxFeePerGas = txtInfo.maxFeePerGas?.toNumber();
-        const decodedData = decode(txtInfo.data);
+        if (txtInfo && txtInfo.to && txtInfo.data != "0x") {
+          const contractAddress = txtInfo.to;
+          const byteCode = await provider.getCode(contractAddress);
+          const gas = txtInfo.gasLimit.toNumber();
+          const gasPrice = txtInfo.gasPrice?.toNumber();
+          const maxFeePerGas = txtInfo.maxFeePerGas?.toNumber();
+          const decodedData = decode(txtInfo.data);
 
-        transactions.push({
-          transactionHash: txtInfo.hash,
-          toAddress: contractAddress,
-          byteCode: byteCode,
-          gas: gas,
-          gasPrice: gasPrice,
-          maxFeePerGas: maxFeePerGas,
-          decoded: decodedData,
-        });
-
-        if (decodedData && decodedData.name == "addLiquididty") {
-          console.log("Yeessssssssssssssss");
-          // buy the token automatically logic (log the data to the bot UI)
+          if (decodedData && "error" in decodedData) {
+            transactions.push({
+              transactionHash: txtInfo.hash,
+              toAddress: contractAddress,
+              byteCode: byteCode,
+              gas: gas,
+              gasPrice: gasPrice,
+              maxFeePerGas: maxFeePerGas,
+              decoded: decodedData,
+              error: decodedData.error,
+            });
+          } else if (decodedData && decodedData.name == "addLiquididty") {
+            console.log("Yeessssssssssssssss");
+            // buy the token automatically logic (log the data to the bot UI)
+          }
         }
+      } catch (error: any) {
+        console.error(`Error processing pending transaction: ${error.message}`);
+        // handle the error
       }
     });
 
