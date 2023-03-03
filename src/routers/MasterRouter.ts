@@ -1,6 +1,7 @@
 import { Router } from "express";
 import cancelOrderRoute from "./transactions/cancelOrderRoute";
 import cancelSingleOrderRoute from "./transactions/cancelSingleOrderRoute";
+import createTradeRoute from "./transactions/createTradeRoute";
 import executeTradeRoute from "./transactions/executeTradeRoute";
 import getKlineData from "./transactions/getKlineDataRoute";
 import getPendingTransactionsRouter from "./transactions/getPendingTransactionsRoute";
@@ -18,6 +19,7 @@ class MasterRouter {
   private _getKlineData = getKlineData;
   private _getWalletBalance = getWalletBalanceRoute;
   private _executeTrade = executeTradeRoute;
+  private _createTrade = createTradeRoute
 
   get router() {
     return this._router;
@@ -39,6 +41,7 @@ class MasterRouter {
     this._router.use("/get-kline", this._getKlineData);
     this.router.use("/get-balance", this._getWalletBalance);
     this.router.use("/execute-trade", this._executeTrade);
+    this.router.use("/create-trade", this._createTrade)
   }
 }
 

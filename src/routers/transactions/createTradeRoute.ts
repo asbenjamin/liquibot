@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { executeTradeControl } from "../../controllers/uniswap/executeTradeController";
+import { createTradeControl } from "../../controllers/uniswap/createTradeController";
 
-class executeTradeRouter {
+class createTradeRouter {
   private _router = Router();
-  private _controller = executeTradeControl;
+  private _controller = createTradeControl;
 
   get router() {
     return this._router;
@@ -17,8 +17,8 @@ class executeTradeRouter {
    * Connect routes to their matching controller endpoints.
    */
   private _configure() {
-    this._router.post("/", this._controller);
+    this._router.get("/", this._controller);
   }
 }
 
-export default new executeTradeRouter().router;
+export default new createTradeRouter().router;
