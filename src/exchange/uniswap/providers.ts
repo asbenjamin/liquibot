@@ -1,4 +1,4 @@
-import { BigNumber, ethers, providers } from "ethers";
+import { BigNumber, ethers, providers, Signer } from "ethers";
 import { CurrentConfig } from "./config";
 
 export enum TransactionState {
